@@ -5,6 +5,7 @@ namespace tests\Meals\Functional\Fake\Provider;
 use Meals\Application\Component\Provider\PollProviderInterface;
 use Meals\Domain\Poll\Poll;
 use Meals\Domain\Poll\PollList;
+use Meals\Domain\Poll\PollResult;
 
 class FakePollProvider implements PollProviderInterface
 {
@@ -38,5 +39,10 @@ class FakePollProvider implements PollProviderInterface
     public function setPolls(PollList $polls): void
     {
         $this->polls = $polls;
+    }
+
+    public function getPollResult(int $employeeId, int $pollId, int $dishId, int $price): PollResult
+    {
+        return new PollResult();
     }
 }
