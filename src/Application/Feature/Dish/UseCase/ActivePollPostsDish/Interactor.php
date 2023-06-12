@@ -6,6 +6,7 @@ use Meals\Application\Component\Provider\DishProviderInterface;
 use Meals\Application\Component\Provider\EmployeeProviderInterface;
 use Meals\Application\Component\Provider\PollProviderInterface;
 use Meals\Application\Component\Validator\DishExistedInListValidator;
+use Meals\Application\Component\Validator\DishTimeValidator;
 use Meals\Application\Component\Validator\PollIsActiveValidator;
 use Meals\Application\Component\Validator\UserHasAccessToViewPollsValidator;
 use Meals\Application\Component\Validator\UserHasPositiveFloorValidator;
@@ -13,6 +14,10 @@ use Meals\Domain\Poll\PollResult;
 
 class Interactor
 {
+    private const FROM_TIME = '08:00:00';
+    private const TO_TIME = '22:00:00';
+    private const DAY_OF_WEEK = '1';
+
     /** @var EmployeeProviderInterface */
     private $employeeProvider;
 
@@ -44,6 +49,11 @@ class Interactor
      */
     private $dishExistedInListValidator;
 
+    /**
+     * @var DishTimeValidator
+     */
+    private $dishTimeValidator;
+
     public function __construct(
         EmployeeProviderInterface $employeeProvider,
         PollProviderInterface $pollProvider,
@@ -51,7 +61,8 @@ class Interactor
         PollIsActiveValidator $pollIsActiveValidator,
         UserHasPositiveFloorValidator $userHasPositiveFloorValidator,
         DishProviderInterface $dishProvider,
-        DishExistedInListValidator $dishExistedInListValidator
+        DishExistedInListValidator $dishExistedInListValidator,
+        DishTimeValidator $dishTimeValidator
     ) {
         $this->employeeProvider = $employeeProvider;
         $this->pollProvider = $pollProvider;
@@ -60,10 +71,21 @@ class Interactor
         $this->userHasPositiveFloorValidator = $userHasPositiveFloorValidator;
         $this->dishProvider = $dishProvider;
         $this->dishExistedInListValidator = $dishExistedInListValidator;
+        $this->dishTimeValidator = $dishTimeValidator;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function postDish(int $employeeId, int $pollId, int $dishId) : PollResult
     {
+        $currentDate = $this->getNow();
+        $dateStr = $currentDate->format('Y-m-d');
+        $fromDate = new \DateTimeImmutable($dateStr . ' ' . self::FROM_TIME);
+        $toDate = new \DateTimeImmutable($dateStr . ' ' .  self::TO_TIME);
+        $dayOfWeek = self::DAY_OF_WEEK;
+        $this->dishTimeValidator->validate($currentDate, $fromDate, $toDate, $dayOfWeek);
+
         $employee = $this->employeeProvider->getEmployee($employeeId);
         $poll = $this->pollProvider->getPoll($pollId);
 
@@ -78,5 +100,10 @@ class Interactor
         $this->userHasPositiveFloorValidator->validate($employee, $dish);
 
         return $this->pollProvider->getPollResult($employee, $poll, $dish);
+    }
+
+    private function getNow(): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable();
     }
 }
