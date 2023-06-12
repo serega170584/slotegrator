@@ -62,7 +62,7 @@ class Interactor
         $this->dishExistedInListValidator = $dishExistedInListValidator;
     }
 
-    public function postDish(int $employeeId, int $pollId, int $dishId, int $price) : PollResult
+    public function postDish(int $employeeId, int $pollId, int $dishId) : PollResult
     {
         $employee = $this->employeeProvider->getEmployee($employeeId);
         $poll = $this->pollProvider->getPoll($pollId);
@@ -75,8 +75,8 @@ class Interactor
         $dishes = $poll->getMenu()->getDishes();
         $this->dishExistedInListValidator->validate($dish, $dishes);
 
-        $this->userHasPositiveFloorValidator->validate($employee, $price);
+        $this->userHasPositiveFloorValidator->validate($employee, $dish);
 
-        return $this->pollProvider->getPollResult($employeeId, $pollId, $dishId, $price);
+        return $this->pollProvider->getPollResult($employee, $poll, $dish);
     }
 }
