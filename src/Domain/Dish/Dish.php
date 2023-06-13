@@ -14,16 +14,22 @@ class Dish
     private $description;
 
     /**
+     * @var int
+     */
+    private $price;
+
+    /**
      * Dish constructor.
      * @param int $id
      * @param string $title
      * @param string $description
      */
-    public function __construct(int $id, string $title, string $description)
+    public function __construct(int $id, string $title, string $description, int $price)
     {
         $this->id = $id;
         $this->title = $title;
         $this->description = $description;
+        $this->price = $price;
     }
 
     /**
@@ -48,5 +54,13 @@ class Dish
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPrice(): int
+    {
+        return $this->price;
     }
 }

@@ -13,4 +13,6 @@ interface PollProviderInterface
     public function getActivePolls(): PollList;
 
     public function getPoll(int $pollId): Poll;
+
+    public function getPollResult(Employee $employee, Poll $poll, Dish $dish, int $floor): PollResult;
 }
