@@ -3,6 +3,10 @@
 namespace tests\Meals\Functional\Interactor;
 
 use Meals\Application\Component\Validator\Exception\AccessDeniedException;
+use Meals\Application\Component\Validator\Exception\DishDatetimeNotDayException;
+use Meals\Application\Component\Validator\Exception\DishDatetimeNotIntervalException;
+use Meals\Application\Component\Validator\Exception\DishIsNotExistedInListException;
+use Meals\Application\Component\Validator\Exception\NegativeEmployeeFloorException;
 use Meals\Application\Component\Validator\Exception\PollIsNotActiveException;
 use Meals\Application\Feature\Dish\UseCase\ActivePollPostsDish\Interactor;
 use Meals\Domain\Dish\Dish;
@@ -28,21 +32,59 @@ class ActivePollPostsDishTest extends FunctionalTestCase
         verify($pollResult)->equals($pollResult);
     }
 
-//    public function testUserHasNotPermissions()
-//    {
-//        $this->expectException(AccessDeniedException::class);
-//
-//        $poll = $this->performTestMethod($this->getEmployeeWithNoPermissions(), $this->getPoll(true));
-//        verify($poll)->equals($poll);
-//    }
-//
-//    public function testPollIsNotActive()
-//    {
-//        $this->expectException(PollIsNotActiveException::class);
-//
-//        $poll = $this->performTestMethod($this->getEmployeeWithPermissions(), $this->getPoll(false));
-//        verify($poll)->equals($poll);
-//    }
+    public function testUserHasNotPermissions()
+    {
+        $this->expectException(AccessDeniedException::class);
+
+        $dish = $this->getDish();
+        $pollResult = $this->performTestMethod($this->getEmployeeWithNoPermissions(), $this->getPoll(true, $dish), $dish, new \DateTimeImmutable('2023-06-12 13:00:00'));
+        verify($pollResult)->equals($pollResult);
+    }
+
+    public function testPollIsNotActive()
+    {
+        $this->expectException(PollIsNotActiveException::class);
+
+        $dish = $this->getDish();
+        $pollResult = $this->performTestMethod($this->getEmployeeWithPermissions(), $this->getPoll(false, $dish), $dish, new \DateTimeImmutable('2023-06-12 13:00:00'));
+        verify($pollResult)->equals($pollResult);
+    }
+
+    public function testPollDayIsNotValid()
+    {
+        $this->expectException(DishDatetimeNotDayException::class);
+
+        $dish = $this->getDish();
+        $pollResult = $this->performTestMethod($this->getEmployeeWithPermissions(), $this->getPoll(true, $dish), $dish, new \DateTimeImmutable('2023-06-13 13:00:00'));
+        verify($pollResult)->equals($pollResult);
+    }
+
+    public function testPollTimeIsNotValid()
+    {
+        $this->expectException(DishDatetimeNotIntervalException::class);
+
+        $dish = $this->getDish();
+        $pollResult = $this->performTestMethod($this->getEmployeeWithPermissions(), $this->getPoll(true, $dish), $dish, new \DateTimeImmutable('2023-06-12 07:00:00'));
+        verify($pollResult)->equals($pollResult);
+    }
+
+    public function testDishIsNotExisted()
+    {
+        $this->expectException(DishIsNotExistedInListException::class);
+
+        $dish = $this->getDish();
+        $pollResult = $this->performTestMethod($this->getEmployeeWithPermissions(), $this->getPoll(true), $dish, new \DateTimeImmutable('2023-06-12 10:00:00'));
+        verify($pollResult)->equals($pollResult);
+    }
+
+    public function testNegativeEmployeeFloor()
+    {
+        $this->expectException(NegativeEmployeeFloorException::class);
+
+        $dish = $this->getNegativePriceDish();
+        $pollResult = $this->performTestMethod($this->getEmployeeWithPermissions(), $this->getPoll(true, $dish), $dish, new \DateTimeImmutable('2023-06-12 10:00:00'));
+        verify($pollResult)->equals($pollResult);
+    }
 
     private function performTestMethod(Employee $employee, Poll $poll, Dish $dish, \DateTimeImmutable $date): PollResult
     {
@@ -125,4 +167,15 @@ class ActivePollPostsDishTest extends FunctionalTestCase
             1
         );
     }
+
+    private function getNegativePriceDish(): Dish
+    {
+        return new Dish(
+            1,
+            'Блюдо 1',
+            'Блюдо 1',
+            5
+        );
+    }
+
 }
