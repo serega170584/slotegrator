@@ -3,6 +3,8 @@
 namespace tests\Meals\Functional\Fake\Provider;
 
 use Meals\Application\Component\Provider\PollProviderInterface;
+use Meals\Domain\Dish\Dish;
+use Meals\Domain\Employee\Employee;
 use Meals\Domain\Poll\Poll;
 use Meals\Domain\Poll\PollList;
 use Meals\Domain\Poll\PollResult;
@@ -41,8 +43,8 @@ class FakePollProvider implements PollProviderInterface
         $this->polls = $polls;
     }
 
-    public function getPollResult(int $employeeId, int $pollId, int $dishId, int $price): PollResult
+    public function getPollResult(Employee $employee, Poll $poll, Dish $dish, int $floor): PollResult
     {
-        return new PollResult();
+        return new PollResult(1, $poll, $employee, $dish, $floor);
     }
 }

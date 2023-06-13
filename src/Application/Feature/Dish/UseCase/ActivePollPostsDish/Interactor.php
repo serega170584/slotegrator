@@ -54,6 +54,11 @@ class Interactor
      */
     private $dishTimeValidator;
 
+    /**
+     * @var \DateTimeImmutable|null
+     */
+    private $now = null;
+
     public function __construct(
         EmployeeProviderInterface $employeeProvider,
         PollProviderInterface $pollProvider,
@@ -79,7 +84,7 @@ class Interactor
      */
     public function postDish(int $employeeId, int $pollId, int $dishId) : PollResult
     {
-        $currentDate = $this->getNow();
+        $currentDate = (null === $this->now) ? new \DateTimeImmutable() : $this->now;
         $dateStr = $currentDate->format('Y-m-d');
         $fromDate = new \DateTimeImmutable($dateStr . ' ' . self::FROM_TIME);
         $toDate = new \DateTimeImmutable($dateStr . ' ' .  self::TO_TIME);
@@ -99,11 +104,11 @@ class Interactor
 
         $this->userHasPositiveFloorValidator->validate($employee, $dish);
 
-        return $this->pollProvider->getPollResult($employee, $poll, $dish);
+        return $this->pollProvider->getPollResult($employee, $poll, $dish, $employee->getFloor() - $dish->getPrice());
     }
 
-    private function getNow(): \DateTimeImmutable
+    public function setNow(\DateTimeImmutable $now): void
     {
-        return new \DateTimeImmutable();
+        $this->now = $now;
     }
 }

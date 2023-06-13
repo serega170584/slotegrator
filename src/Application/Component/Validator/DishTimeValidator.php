@@ -16,7 +16,7 @@ class DishTimeValidator
             throw new DishDatetimeNotDayException();
         }
 
-        if ($fromDate < $currentDate || $currentDate > $toDate) {
+        if ($currentDate < $fromDate || $toDate < $currentDate) {
             throw new DishDatetimeNotIntervalException();
         }
     }
